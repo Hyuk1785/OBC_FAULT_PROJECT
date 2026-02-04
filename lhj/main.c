@@ -1,25 +1,23 @@
 #include <stdio.h>
 #include "fault.h"
 
-#define csv_file "fault.csv"
-#define FALUT_NUM 12
+#define csv_file "Fault1.csv"
 
 int main(void)
 {
-    FILE* fp = NULL;
-    FILE* out = NULL;
+
+    FILE* fp = fopen(csv_file, "r");
+    FILE* out = fopen("result.csv", "w");
     InputSnapshot in = { 0 };
 
-    /* 입력 CSV */
-    fp = fopen("input.csv", "r");
+    // 입력 CSV 오류 방지
     if (!fp)
     {
         printf("Input CSV open failed\n");
         return 1;
     }
 
-    /* 결과 CSV */
-    out = fopen("result.csv", "w");
+    // 결과 CSV 오류 방지
     if (!out)
     {
         printf("Result CSV open failed\n");
