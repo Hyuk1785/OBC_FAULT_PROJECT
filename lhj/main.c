@@ -69,6 +69,8 @@ int main(int argc, char* argv[])
     /* ------------------------------
      * Main diagnostic loop
      * ------------------------------ */
+	Input_ReadLine(fp, &in); // Çì´õ ½ºÅµ
+
     while (Input_ReadLine(fp, &in))
     {
         /* 1. Fault diagnosis (decision only) */
