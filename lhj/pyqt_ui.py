@@ -17,9 +17,9 @@ class FaultDiagUI(QWidget):
         self.input_path = ""
 
         # UI
-        self.label = QLabel("Input CSV: 선택되지 않음")
-        self.btn_select = QPushButton("Input CSV 선택")
-        self.btn_run = QPushButton("진단 실행")
+        self.label = QLabel("Input CSV: Not selected")
+        self.btn_select = QPushButton("Select Input CSV")
+        self.btn_run = QPushButton("Run Diagnosis")
 
         self.btn_select.clicked.connect(self.select_csv)
         self.btn_run.clicked.connect(self.run_diagnosis)
@@ -31,12 +31,12 @@ class FaultDiagUI(QWidget):
         self.setLayout(layout)
 
     # =========================
-    # CSV 선택
+    # Select CSV
     # =========================
     def select_csv(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Input CSV 선택",
+            "Select Input CSV",
             "",
             "CSV Files (*.csv)"
         )
@@ -46,23 +46,27 @@ class FaultDiagUI(QWidget):
             self.label.setText(f"Input CSV:\n{self.input_path}")
 
     # =========================
-    # 진단 실행 (EXE 호출)
+    # Run diagnosis (EXE call)
     # =========================
     def run_diagnosis(self):
         if not self.input_path:
-            QMessageBox.warning(self, "오류", "Input CSV를 먼저 선택하세요.")
+            QMessageBox.warning(
+                self,
+                "Error",
+                "Please select an input CSV file first."
+            )
             return
 
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
         # -------------------------
-        # result 폴더 보장
+        # Ensure result directory
         # -------------------------
         result_dir = os.path.join(BASE_DIR, "result")
         os.makedirs(result_dir, exist_ok=True)
 
         # -------------------------
-        # 결과 파일 경로 (lhj/result)
+        # Result file path (lhj/result)
         # -------------------------
         base = os.path.splitext(os.path.basename(self.input_path))[0]
         result_path = os.path.normpath(
@@ -70,7 +74,7 @@ class FaultDiagUI(QWidget):
         )
 
         # -------------------------
-        # exe 경로 (lhj/Debug)
+        # EXE path (lhj/Debug)
         # -------------------------
         exe_path = os.path.normpath(
             os.path.join(BASE_DIR, "Debug", "OBC_FAULT_LOGIC.exe")
@@ -79,13 +83,13 @@ class FaultDiagUI(QWidget):
         if not os.path.exists(exe_path):
             QMessageBox.critical(
                 self,
-                "오류",
-                f"OBC_FAULT_LOGIC.exe를 찾을 수 없습니다.\n\n{exe_path}"
+                "Error",
+                f"Cannot find OBC_FAULT_LOGIC.exe.\n\n{exe_path}"
             )
             return
 
         # -------------------------
-        # 디버깅 로그
+        # Debug log
         # -------------------------
         print("====================================")
         print("EXE PATH   :", exe_path)
@@ -94,11 +98,11 @@ class FaultDiagUI(QWidget):
         print("====================================")
 
         # -------------------------
-        # QProcess 실행
+        # Run QProcess
         # -------------------------
         self.process = QProcess(self)
 
-        # Debug 폴더를 작업 디렉토리로 설정
+        # Set working directory to Debug
         self.process.setWorkingDirectory(
             os.path.join(BASE_DIR, "Debug")
         )
@@ -119,16 +123,16 @@ class FaultDiagUI(QWidget):
         if exit_code != 0:
             QMessageBox.critical(
                 self,
-                "실패",
-                "진단 실행 중 오류가 발생했습니다.\n"
-                "콘솔 로그를 확인하세요."
+                "Failure",
+                "An error occurred during diagnosis.\n"
+                "Please check the console log."
             )
             return
 
         QMessageBox.information(
             self,
-            "완료",
-            f"진단 완료!\n\n결과 파일:\n{result_path}"
+            "Completed",
+            f"Diagnosis completed successfully.\n\nResult file:\n{result_path}"
         )
 
 
