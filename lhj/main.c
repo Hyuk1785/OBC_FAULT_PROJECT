@@ -1,65 +1,105 @@
 #include <stdio.h>
 #include "fault.h"
 
-#define input_file "Fault1.csv"
-#define result_file "Result1.csv"
+/* ============================================================================
+ *  Program : fault_engine.exe
+ *  Purpose : OBC Fault Diagnostic Engine
+ *
+ *  Usage   : fault_engine.exe input.csv result.csv
+ *
+ *  Design  :
+ *   - argv[1] : Input CSV file path
+ *   - argv[2] : Result CSV file path
+ *   - argv[0] : Executable name (NOT used in logic)
+ *
+ * ============================================================================ */
 
-int main(void)
+int main(int argc, char* argv[])
 {
-
-    FILE* fp = fopen(input_file, "r");
-    FILE* out = fopen(result_file, "w");
-    InputSnapshot in = { 0 };
-
-    // 입력 CSV 오류 방지
-    if (!fp)
+    /* ------------------------------
+     * Argument validation
+     * ------------------------------ */
+    if (argc < 3)
     {
-        printf("Input CSV open failed\n");
+        printf("Usage: %s input.csv result.csv\n", argv[0]);
         return 1;
     }
 
-    // 결과 CSV 오류 방지
+    /* ------------------------------
+     * File path binding
+     * ------------------------------ */
+    const char* input_file = argv[1];
+    const char* result_file = argv[2];
+
+    /* ------------------------------
+     * File open
+     * ------------------------------ */
+    FILE* fp = fopen(input_file, "r");
+    FILE* out = fopen(result_file, "w");
+
+    InputSnapshot in = { 0 };
+
+    if (!fp)
+    {
+        printf("ERROR: Failed to open input CSV : %s\n", input_file);
+        return 1;
+    }
+
     if (!out)
     {
-        printf("Result CSV open failed\n");
+        printf("ERROR: Failed to open result CSV : %s\n", result_file);
         fclose(fp);
         return 1;
     }
 
-    /* CSV 헤더 */
-    fprintf(out, "Cycle,"
+    /* ------------------------------
+     * CSV Header
+     * ------------------------------ */
+    fprintf(out,
+        "Cycle,"
         "F_0x01,F_0x02,F_0x03,F_0x04,F_0x05,F_0x06,"
         "F_0x07,F_0x08,F_0x09,F_0x0A,F_0x0B,F_0x0C\n"
     );
 
+    /* ------------------------------
+     * Fault system initialization
+     * ------------------------------ */
     Fault_Init();
 
-    /* 메인 진단 루프 */
+    /* ------------------------------
+     * Main diagnostic loop
+     * ------------------------------ */
     while (Input_ReadLine(fp, &in))
     {
-        /* 1. 모든 고장 진단 (판단만) */
+        /* 1. Fault diagnosis (decision only) */
         Fault_Diagnose(&in);
 
-        /* 2. 결과 기록 */
+        /* 2. Write result */
         fprintf(out, "%d", in.Cycle);
 
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_INPUT_OVERCURRENT));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_INPUT_UNDERCURRENT));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_PLUG));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_RELAY));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_BMS_STATE));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_OVER_TEMP));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_CAN));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_ISO));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_PAYMENT));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_WDT));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_SEQ_TIMEOUT));
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_TEMP_SENSOR));
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_INPUT_OVERCURRENT));   // 0x01
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_INPUT_UNDERCURRENT));  // 0x02
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_PLUG));                // 0x03
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_RELAY));               // 0x04
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_BMS_STATE));           // 0x05
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_OVER_TEMP));           // 0x06
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_CAN));                 // 0x07
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_ISO));                 // 0x08
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_PAYMENT));             // 0x09
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_WDT));                 // 0x0A
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_SEQ_TIMEOUT));         // 0x0B
+        fprintf(out, ",%d", Fault_GetStatus(FAULT_TEMP_SENSOR));         // 0x0C
 
         fprintf(out, "\n");
     }
+
+    /* ------------------------------
+     * Cleanup
+     * ------------------------------ */
     fclose(fp);
     fclose(out);
+
+    printf("Fault diagnosis completed successfully.\n");
 
     // 단위 테스트 코드입니다. 
     // 하나씩 실행 시키면, 각각의 test_case에 대한 결과값이 출력됩니다.
