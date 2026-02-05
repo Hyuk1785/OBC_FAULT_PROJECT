@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include "fault.h"
 
-#define csv_file "Fault1.csv"
+#define input_file "Fault1.csv"
+#define result_file "Result1.csv"
 
 int main(void)
 {
 
-    FILE* fp = fopen(csv_file, "r");
-    FILE* out = fopen("result.csv", "w");
+    FILE* fp = fopen(input_file, "r");
+    FILE* out = fopen(result_file, "w");
     InputSnapshot in = { 0 };
 
     // 입력 CSV 오류 방지
