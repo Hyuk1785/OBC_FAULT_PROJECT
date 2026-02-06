@@ -591,7 +591,7 @@ void Diagnose_Fault_0x0C(const InputSnapshot* in)
     static uint8_t temp_fault_cnt = 0;
 
     /* 진단 조건 */
-    if (in->SeqState == SEQ_CHARGING &&
+    if ((in->SeqState == SEQ_CHARGING || in->SeqState == SEQ_INIT) && 
         (in->H < -20 || in->H > 120))
     {
         temp_fault_cnt++;
@@ -607,7 +607,7 @@ void Diagnose_Fault_0x0C(const InputSnapshot* in)
     }
     /* 회복 조건 */
     else if (faultState[FAULT_TEMP_SENSOR] == FAULT_CONFIRM &&
-        in->SeqState == SEQ_INIT &&
+        (in->SeqState == SEQ_INIT || in->SeqState == SEQ_CHARGING) &&
         (in->H >= -20 && in->H <= 120))
     {
         faultState[FAULT_TEMP_SENSOR] = FAULT_NORMAL;

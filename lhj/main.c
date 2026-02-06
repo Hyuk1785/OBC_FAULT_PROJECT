@@ -16,112 +16,112 @@
 
 int main(int argc, char* argv[])
 {
-    /* ------------------------------
-     * Argument validation
-     * ------------------------------ */
-    if (argc < 3)
-    {
-        printf("ERROR: ÀÔ·Â ÆÄÀÏ°ú °á°ú ÆÄÀÏÀÌ ÀÔ·ÂµÇÁö ¾Ê¾Ò½À´Ï´Ù.\n");
-        return 1;
-    }
+    // /* ------------------------------
+    //  * Argument validation
+    //  * ------------------------------ */
+    // if (argc < 3)
+    // {
+    //     printf("ERROR: ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·Âµï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.\n");
+    //     return 1;
+    // }
 
-    /* ------------------------------
-     * File path binding
-     * ------------------------------ */
-	const char* exe_name = argv[0];
-    const char* input_file = argv[1];
-    const char* result_file = argv[2];
+    // /* ------------------------------
+    //  * File path binding
+    //  * ------------------------------ */
+	// const char* exe_name = argv[0];
+    // const char* input_file = argv[1];
+    // const char* result_file = argv[2];
 
-	printf("exe File   : %s\n", exe_name);
-	printf("Input File   : %s\n", input_file);
-	printf("Result File  : %s\n", result_file);
+	// printf("exe File   : %s\n", exe_name);
+	// printf("Input File   : %s\n", input_file);
+	// printf("Result File  : %s\n", result_file);
 
 
-    /* ------------------------------
-     * File open
-     * ------------------------------ */
-    FILE* fp = fopen(input_file, "r");
-    FILE* out = fopen(result_file, "w");
+    // /* ------------------------------
+    //  * File open
+    //  * ------------------------------ */
+    // FILE* fp = fopen(input_file, "r");
+    // FILE* out = fopen(result_file, "w");
 
-    InputSnapshot in = { 0 };
+    // InputSnapshot in = { 0 };
 
-    if (!fp)
-    {
-        printf("ERROR: Failed to open input CSV : %s\n", input_file);
-        return 1;
-    }
+    // if (!fp)
+    // {
+    //     printf("ERROR: Failed to open input CSV : %s\n", input_file);
+    //     return 1;
+    // }
 
-    if (!out)
-    {
-        printf("ERROR: Failed to open result CSV : %s\n", result_file);
-        fclose(fp);
-        return 1;
-    }
+    // if (!out)
+    // {
+    //     printf("ERROR: Failed to open result CSV : %s\n", result_file);
+    //     fclose(fp);
+    //     return 1;
+    // }
 
-    /* ------------------------------
-     * CSV Header
-     * ------------------------------ */
-    fprintf(out,
-        "Cycle,"
-        "F_0x01,F_0x02,F_0x03,F_0x04,F_0x05,F_0x06,"
-        "F_0x07,F_0x08,F_0x09,F_0x0A,F_0x0B,F_0x0C\n"
-    );
+    // /* ------------------------------
+    //  * CSV Header
+    //  * ------------------------------ */
+    // fprintf(out,
+    //     "Cycle,"
+    //     "F_0x01,F_0x02,F_0x03,F_0x04,F_0x05,F_0x06,"
+    //     "F_0x07,F_0x08,F_0x09,F_0x0A,F_0x0B,F_0x0C\n"
+    // );
 
-    /* ------------------------------
-     * Fault system initialization
-     * ------------------------------ */
-    Fault_Init();
+    // /* ------------------------------
+    //  * Fault system initialization
+    //  * ------------------------------ */
+    // Fault_Init();
 
-    /* ------------------------------
-     * Main diagnostic loop
-     * ------------------------------ */
-	Input_ReadLine(fp, &in); // Çì´õ ½ºÅµ
+    // /* ------------------------------
+    //  * Main diagnostic loop
+    //  * ------------------------------ */
+	// Input_ReadLine(fp, &in); // ï¿½ï¿½ï¿½ ï¿½ï¿½Åµ
 
-    while (Input_ReadLine(fp, &in))
-    {
-        /* 1. Fault diagnosis (decision only) */
-        Fault_Diagnose(&in);
+    // while (Input_ReadLine(fp, &in))
+    // {
+    //     /* 1. Fault diagnosis (decision only) */
+    //     Fault_Diagnose(&in);
 
-        /* 2. Write result */
-        fprintf(out, "%d", in.Cycle);
+    //     /* 2. Write result */
+    //     fprintf(out, "%d", in.Cycle);
 
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_INPUT_OVERCURRENT));   // 0x01
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_INPUT_UNDERCURRENT));  // 0x02
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_PLUG));                // 0x03
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_RELAY));               // 0x04
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_BMS_STATE));           // 0x05
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_OVER_TEMP));           // 0x06
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_CAN));                 // 0x07
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_ISO));                 // 0x08
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_PAYMENT));             // 0x09
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_WDT));                 // 0x0A
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_SEQ_TIMEOUT));         // 0x0B
-        fprintf(out, ",%d", Fault_GetStatus(FAULT_TEMP_SENSOR));         // 0x0C
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_INPUT_OVERCURRENT));   // 0x01
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_INPUT_UNDERCURRENT));  // 0x02
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_PLUG));                // 0x03
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_RELAY));               // 0x04
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_BMS_STATE));           // 0x05
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_OVER_TEMP));           // 0x06
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_CAN));                 // 0x07
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_ISO));                 // 0x08
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_PAYMENT));             // 0x09
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_WDT));                 // 0x0A
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_SEQ_TIMEOUT));         // 0x0B
+    //     fprintf(out, ",%d", Fault_GetStatus(FAULT_TEMP_SENSOR));         // 0x0C
 
-        fprintf(out, "\n");
-    }
+    //     fprintf(out, "\n");
+    // }
 
-    /* ------------------------------
-     * Cleanup
-     * ------------------------------ */
-    fclose(fp);
-    fclose(out);
+    // /* ------------------------------
+    //  * Cleanup
+    //  * ------------------------------ */
+    // fclose(fp);
+    // fclose(out);
 
-    printf("Fault diagnosis completed successfully.\n");
+    // printf("Fault diagnosis completed successfully.\n");
 
-    // ´ÜÀ§ Å×½ºÆ® ÄÚµåÀÔ´Ï´Ù. 
-    // ÇÏ³ª¾¿ ½ÇÇà ½ÃÅ°¸é, °¢°¢ÀÇ test_case¿¡ ´ëÇÑ °á°ú°ªÀÌ Ãâ·ÂµË´Ï´Ù.
-    /*Test_Fault_0x01("Unit_Test/fault_0x01_test.csv");*/
-    /*Test_Fault_0x02("Unit_Test/fault_0x02_test.csv");*/
-    /*Test_Fault_0x03("Unit_Test/fault_0x03_test.csv");*/
-    /*Test_Fault_0x04("Unit_Test/fault_0x04_test.csv");*/
-    /*Test_Fault_0x05("Unit_Test/fault_0x05_test.csv");*/
-    /*Test_Fault_0x06("Unit_Test/fault_0x06_test.csv");*/
-    /*Test_Fault_0x07("Unit_Test/fault_0x07_test.csv");*/
-    /*Test_Fault_0x08("Unit_Test/fault_0x08_test.csv");*/
-    /*Test_Fault_0x09("Unit_Test/fault_0x09_test.csv");*/
-    /*Test_Fault_0x0A("Unit_Test/fault_0x0A_test.csv");*/
-    /*Test_Fault_0x0B("Unit_Test/fault_0x0B_test.csv");*/
-    /*Test_Fault_0x0C("Unit_Test/fault_0x0C_test.csv");*/
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ® ï¿½Úµï¿½ï¿½Ô´Ï´ï¿½. 
+    // ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å°ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ test_caseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ÂµË´Ï´ï¿½.
+    //Test_Fault_0x01("Unit_Test/fault_0x01_test.csv");
+    // Test_Fault_0x02("Unit_Test/fault_0x02_test.csv");
+    // Test_Fault_0x03("Unit_Test/fault_0x03_test.csv");
+    // Test_Fault_0x04("Unit_Test/fault_0x04_test.csv");
+    // Test_Fault_0x05("Unit_Test/fault_0x05_test.csv");
+    // Test_Fault_0x06("Unit_Test/fault_0x06_test.csv");
+    // Test_Fault_0x07("Unit_Test/fault_0x07_test.csv");
+    // Test_Fault_0x08("Unit_Test/fault_0x08_test.csv");
+    // Test_Fault_0x09("Unit_Test/fault_0x09_test.csv");
+    // Test_Fault_0x0A("Unit_Test/fault_0x0A_test.csv");
+    // Test_Fault_0x0B("Unit_Test/fault_0x0B_test.csv");
+    Test_Fault_0x0C("Unit_Test/fault_0x0C_test.csv");
     return 0;
 }
