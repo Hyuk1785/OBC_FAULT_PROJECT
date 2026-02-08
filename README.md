@@ -1,7 +1,7 @@
 # OBC_FAULT_PROJECT
 
 ## Overview
-본 프로젝트는 OBC(On Board Charger) 고장 사양 진단서를 기반으로 고장 진단 로직을 설계 및 구현한 진단 엔진입니다.  
+본 프로젝트는 OBC 고장 사양 진단서를 기반으로 고장 진단 로직을 설계 및 구현한 진단 엔진입니다.  
 CAN Raw Data (CSV 파일)를 입력받아 각 고장 코드(0x01 ~ 0x0C)에 대한 진단 결과를 생성합니다.
 
 ## Development Date
