@@ -5,7 +5,7 @@
 CAN Raw Data (CSV 파일)를 입력받아 각 고장 코드(0x01 ~ 0x0C)에 대한 진단 결과를 생성합니다.
 
 ## Development Period
-2025.01 ~ 2025.02
+2026.01 ~ 2026.02
 
 ## Features
 - 고장 진단 로직 설계 및 구현 (C Language)
