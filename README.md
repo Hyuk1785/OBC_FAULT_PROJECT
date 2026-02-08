@@ -14,6 +14,7 @@ CAN Raw Data (CSV 파일)를 입력받아 각 고장 코드(0x01 ~ 0x0C)에 대�
 - 입력 CSV 분석 후 결과 CSV 자동 생성
 
 ## Directory Structure
+```
 OBC_FAULT_PROJECT/
 ├── lhj/
 │   ├── Debug/ # 각 고장 코드 테스트용 CSV 파일 저장
@@ -33,6 +34,7 @@ OBC_FAULT_PROJECT/
 │   ├── fault_test.c     # 개별 Fault 테스트 코드
 │   ├── sequence.cpp     # OBC 로직 예시 코드
 │   ├── pyqt_test.py     # PyQt5 기반 GUI 진단 프로그램
+```
 
 ## How to Use
 1. PyQt5 GUI 실행(pyqt_test.py)
