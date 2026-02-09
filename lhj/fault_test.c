@@ -61,21 +61,21 @@ void Test_Fault_0x02(const char* csv_path)
         return;
     }
 
-    Fault_Init();   // 모든 fault 상태 초기화
+    Fault_Init();
 
-    printf("Cycle | Seq | Ia Ib Ic | Fault_0x02\n");
-    printf("------------------------------------------------\n");
+    printf("Cycle | Seq | ChargCnt | Ia Ib Ic | Fault_0x02\n");
+    printf("------------------------------------------------------\n");
 
     while (Input_ReadLine(fp, &in))
     {
-        /* ✅ 오직 이 함수만으로 판단 */
         Diagnose_Fault_0x02(&in);
 
         int state = Fault_GetStatus(FAULT_INPUT_UNDERCURRENT);
 
-        printf("%5d | %8d | %2.0f %2.0f %2.0f | %s\n",
+        printf("%5d | %3d | %8d | %2.0f %2.0f %2.0f | %s\n",
             in.Cycle,
             in.SeqState,
+            in.Charg_Cnt,     // 여기 추가
             in.Ia,
             in.Ib,
             in.Ic,
@@ -84,6 +84,7 @@ void Test_Fault_0x02(const char* csv_path)
 
     fclose(fp);
 }
+
 
 /* ================= Fault 0x03 Test ================= */
 void Test_Fault_0x03(const char* csv_path)

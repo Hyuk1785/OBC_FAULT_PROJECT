@@ -26,7 +26,7 @@ void Fault_Init(void)
     }
 }
 
-// 종합 진단 코드(아직 통합 테스트는 미진행)
+// 종합 고장 진단 코드
 void Fault_Diagnose(const InputSnapshot* snapshot)
 {
     Diagnose_Fault_0x01(snapshot);
@@ -43,48 +43,69 @@ void Fault_Diagnose(const InputSnapshot* snapshot)
     Diagnose_Fault_0x0C(snapshot);
 }
 
+// 고장 상태 조회 함수
 FaultStatus Fault_GetStatus(FaultCode code)
 {
     return faultState[code];
 }
 
+/******************************************************************************
+ * Function : Diagnose_Fault_0x01
+ * Purpose  : 입력 전류 과전류 고장(0x01) 진단 및 상태 관리
+ *
+ * Logic
+ *  - SEQ_CHARGING 상태에서 3상 전류 중 하나라도 Imax 초과 시 Over Counter 증가
+ *  - Time Threshold 미만 → FAULT_DETECT
+ *  - Time Threshold 이상 → FAULT_CONFIRM
+ *  - CONFIRM 상태에서 전류가 정상 범위로 일정 시간 유지되면 NORMAL로 복귀
+ ******************************************************************************/
 void Diagnose_Fault_0x01(const InputSnapshot* in)
 {
+    /* 고장 검출 및 회복 시간 카운터 */
     static uint8_t over_cnt = 0;
     static uint8_t rec_cnt = 0;
 
-    /* ================= 고장 진단 ================= */
+    /* 임계값 정의 */
+    int Imax = 32;            // 고장 검출 전류 임계값
+    int I_normal_max = 24;    // 회복 판단 전류 임계값
+    int Time_Threshold = 10;  // Detect/Confirm 및 Recovery 시간 기준
+
+    /* ================= 고장 진단 영역 ================= */
     if (in->SeqState == SEQ_CHARGING &&
-        in->Ia > 32 && in->Ib > 32 && in->Ic > 32)
+        (in->Ia > Imax || in->Ib > Imax || in->Ic > Imax))
     {
+        /* 과전류 지속 시간 카운트 */
         if (over_cnt < 255)
             over_cnt++;
 
+        /* Recovery 카운터 초기화 */
         rec_cnt = 0;
 
-        /* DETECT 상태 */
-        if (over_cnt < 10)
+        /* Detect / Confirm 상태 판단 */
+        if (over_cnt < Time_Threshold)
         {
             faultState[FAULT_INPUT_OVERCURRENT] = FAULT_DETECT;
         }
         else
         {
-            /* CONFIRM 상태 */
             faultState[FAULT_INPUT_OVERCURRENT] = FAULT_CONFIRM;
         }
     }
     else
     {
+        /* 과전류 조건 해제 시 Detect Counter 리셋 */
         over_cnt = 0;
 
-        /* ================= 고장 회복 ================= */
+        /* ================= 고장 회복 영역 ================= */
         if (faultState[FAULT_INPUT_OVERCURRENT] == FAULT_CONFIRM &&
-            in->Ia < 24 && in->Ib < 24 && in->Ic < 24)
+            (in->Ia < I_normal_max && in->Ib < I_normal_max && in->Ic < I_normal_max))
         {
+            /* 정상 상태 지속 시간 카운트 */
             if (rec_cnt < 255)
                 rec_cnt++;
 
-            if (rec_cnt >= 10)
+            /* 일정 시간 정상 유지 시 Fault 해제 */
+            if (rec_cnt >= Time_Threshold)
             {
                 faultState[FAULT_INPUT_OVERCURRENT] = FAULT_NORMAL;
                 rec_cnt = 0;
@@ -93,9 +114,10 @@ void Diagnose_Fault_0x01(const InputSnapshot* in)
         }
         else
         {
+            /* Recovery 조건 미충족 시 Recovery Counter 리셋 */
             rec_cnt = 0;
 
-            /* CONFIRM도 DETECT도 아니면 NORMAL 유지 */
+            /* Confirm 상태가 아니라면 NORMAL 상태 유지 */
             if (faultState[FAULT_INPUT_OVERCURRENT] != FAULT_CONFIRM)
             {
                 faultState[FAULT_INPUT_OVERCURRENT] = FAULT_NORMAL;
@@ -104,41 +126,41 @@ void Diagnose_Fault_0x01(const InputSnapshot* in)
     }
 }
 
+
 void Diagnose_Fault_0x02(const InputSnapshot* in)
 {
     static uint8_t under_cnt = 0;
     static uint8_t rec_cnt = 0;
 
-    /* ================= 진단 조건 ================= */
+    int Imin = 6;
+	int I_normal_min = 12;
+    int Time_Threshold = 10;  // Detect/Confirm 및 Recovery 시간 기준
+
     if (in->SeqState == SEQ_CHARGING &&
-        in->Ia < 6 && in->Ib < 6 && in->Ic < 6)
+        in->Charg_Cnt > 20 &&
+        (in->Ia < Imin && in->Ib < Imin && in->Ic < Imin))
     {
         if (under_cnt < 255)
             under_cnt++;
 
         rec_cnt = 0;
 
-        if (under_cnt < 10)
-        {
+        if (under_cnt < Time_Threshold)
             faultState[FAULT_INPUT_UNDERCURRENT] = FAULT_DETECT;
-        }
         else
-        {
             faultState[FAULT_INPUT_UNDERCURRENT] = FAULT_CONFIRM;
-        }
     }
     else
     {
         under_cnt = 0;
 
-        /* ================= 회복 조건 ================= */
         if (faultState[FAULT_INPUT_UNDERCURRENT] == FAULT_CONFIRM &&
-            in->Ia > 12 && in->Ib > 12 && in->Ic > 12)
+            (in->Ia > I_normal_min && in->Ib > I_normal_min && in->Ic > I_normal_min))
         {
             if (rec_cnt < 255)
                 rec_cnt++;
 
-            if (rec_cnt >= 10)
+            if (rec_cnt >= Time_Threshold)
             {
                 faultState[FAULT_INPUT_UNDERCURRENT] = FAULT_NORMAL;
                 under_cnt = 0;
@@ -150,12 +172,11 @@ void Diagnose_Fault_0x02(const InputSnapshot* in)
             rec_cnt = 0;
 
             if (faultState[FAULT_INPUT_UNDERCURRENT] != FAULT_CONFIRM)
-            {
                 faultState[FAULT_INPUT_UNDERCURRENT] = FAULT_NORMAL;
-            }
         }
     }
 }
+
 
 void Diagnose_Fault_0x03(const InputSnapshot* in)
 {
@@ -167,7 +188,7 @@ void Diagnose_Fault_0x03(const InputSnapshot* in)
         (
             in->PlugInfo == PLUG_UNPLUGGED ||
             (in->PlugInfo == PLUG_CONNECTED_PAID &&
-                in->Ia < 0 && in->Ib < 0 && in->Ic < 0)
+                in->Ia <= 0 && in->Ib <= 0 && in->Ic <= 0)
             ))
     {
         /* 처음 CONFIRM으로 들어갈 때만 카운트 */
@@ -439,10 +460,11 @@ void Diagnose_Fault_0x09(const InputSnapshot* in)
 {
     static uint8_t pay_err_cnt = 0;
 
-    /* ================= 회복 조건 (최우선) ================= */
-    if ((in->PlugInfo == PLUG_CONNECTED_PAID &&
-        in->SeqState == SEQ_CHARGING) ||
-        (in->SeqState == SEQ_INIT))
+    /* ================= 회복 조건 (우선 처리) ================= */
+    /* 결제 완료 후 충전 시작 또는 세션 종료 시 NORMAL 복귀 */
+    if (in->SeqState == SEQ_INIT &&
+        (in->PlugInfo == PLUG_CONNECTED_PAID ||
+        in->PlugInfo == PLUG_UNPLUGGED))
     {
         faultState[FAULT_PAYMENT] = FAULT_NORMAL;
         pay_err_cnt = 0;
@@ -450,9 +472,9 @@ void Diagnose_Fault_0x09(const InputSnapshot* in)
     }
 
     /* ================= 진단 조건 ================= */
-
-    /* Case 2: 결제 미완료 상태 반복 */
-    if (in->PlugInfo == PLUG_CONNECTED_NO_PAY)
+    /* 충전 상태가 아니고, 플러그는 연결됐지만 결제 안 된 상태 */
+    if (in->SeqState != SEQ_CHARGING &&
+        in->PlugInfo == PLUG_CONNECTED_NO_PAY)
     {
         if (pay_err_cnt < 255)
             pay_err_cnt++;
@@ -462,13 +484,17 @@ void Diagnose_Fault_0x09(const InputSnapshot* in)
         else
             faultState[FAULT_PAYMENT] = FAULT_DETECT;
     }
-    /* Case 1: 결제는 됐는데 충전이 시작되지 않음 */
-    else if (in->PlugInfo == PLUG_CONNECTED_PAID &&
-        in->SeqState != SEQ_CHARGING)
+    else
     {
-        faultState[FAULT_PAYMENT] = FAULT_CONFIRM;
+        /* 그 외 상태에서는 카운터 유지/초기화 정책 */
+        if (faultState[FAULT_PAYMENT] != FAULT_CONFIRM)
+        {
+            pay_err_cnt = 0;
+            faultState[FAULT_PAYMENT] = FAULT_NORMAL;
+        }
     }
 }
+
 
 void Diagnose_Fault_0x0A(const InputSnapshot* in)
 {
@@ -528,11 +554,12 @@ void Diagnose_Fault_0x0A(const InputSnapshot* in)
 void Diagnose_Fault_0x0B(const InputSnapshot* in)
 {
     static int prev_seq = -1;
-    static int seq_timer = 0;              // 동일 시퀀스 체류 시간
-    static uint8_t timeout_repeat_cnt = 0; // 고장 반복 횟수
+    static int seq_timer = 0;
+    static uint8_t timeout_repeat_cnt = 0;
+    static uint8_t latched = 0;
 
-    /* 재기동 중지 (Latch) */
-    if (timeout_repeat_cnt >= 3)
+    /* 재기동 중지 (Latched) */
+    if (latched)
     {
         faultState[FAULT_SEQ_TIMEOUT] = FAULT_CONFIRM;
         return;
@@ -540,22 +567,23 @@ void Diagnose_Fault_0x0B(const InputSnapshot* in)
 
     /* 시퀀스 체류 시간 계산 */
     if (in->SeqState == prev_seq)
-    {
         seq_timer++;
-    }
     else
     {
         prev_seq = in->SeqState;
-        seq_timer = 1;   // 진입 시 1초부터 카운트
+        seq_timer = 1;
     }
 
     int timeout = 0;
 
-    /* 시퀀스별 타임아웃 조건 */
+    /* ===== 시퀀스별 타임아웃 조건 ===== */
     switch (in->SeqState)
     {
-    case SEQ_INIT:
     case SEQ_WAIT:
+        if (seq_timer >= 10)
+            timeout = 1;
+        break;
+
     case SEQ_FAULT:
     case SEQ_RESET:
         if (seq_timer >= 10)
@@ -563,7 +591,7 @@ void Diagnose_Fault_0x0B(const InputSnapshot* in)
         break;
 
     case SEQ_CHARGING:
-        if (seq_timer > 3600)   // Full_ChargeCnt
+        if (seq_timer > 3600)
             timeout = 1;
         break;
 
@@ -571,20 +599,29 @@ void Diagnose_Fault_0x0B(const InputSnapshot* in)
         break;
     }
 
-    /* 진단 즉시 */
+    /* ===== 진단 즉시 ===== */
     if (timeout)
     {
+        if (faultState[FAULT_SEQ_TIMEOUT] != FAULT_CONFIRM)
+        {
+            timeout_repeat_cnt++;
+
+            if (timeout_repeat_cnt >= 3)
+                latched = 1;
+        }
+
         faultState[FAULT_SEQ_TIMEOUT] = FAULT_CONFIRM;
-        timeout_repeat_cnt++;
     }
-    /* 회복 조건: fault 상태에서 INIT 진입 */
+    /* ===== 회복 조건 ===== */
     else if (faultState[FAULT_SEQ_TIMEOUT] == FAULT_CONFIRM &&
-        in->SeqState == SEQ_INIT)
+        in->SeqState == SEQ_INIT &&
+        !latched)
     {
         faultState[FAULT_SEQ_TIMEOUT] = FAULT_NORMAL;
         seq_timer = 1;
     }
 }
+
 
 void Diagnose_Fault_0x0C(const InputSnapshot* in)
 {
