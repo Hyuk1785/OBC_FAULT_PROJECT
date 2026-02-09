@@ -1,18 +1,40 @@
-#include <stdio.h>
-#include "fault.h"
-
 /* ============================================================================
  *  Program : fault_engine.exe
- *  Purpose : OBC Fault Diagnostic Engine
+ *  Author  : Lee Hyun Jun
  *
- *  Usage   : fault_engine.exe input.csv result.csv
+ *  System  : OBC Fault Diagnostic Engine
  *
- *  Design  :
- *   - argv[1] : Input CSV file path
- *   - argv[2] : Result CSV file path
- *   - argv[0] : Executable name (NOT used in logic)
+ *  Overview
+ *  - OBC 고장 사양 진단서를 기반으로 고장 진단 로직을 설계 및 구현한 진단 엔진
+ *  - CAN Raw Data (CSV) 입력을 분석하여 각 Fault Code(0x01 ~ 0x0C)의 상태를 판단
+ *
+ *  Architecture Design
+ *  - Input.c/h   : CSV Parser → InputSnapshot 구조체 변환
+ *  - fault.c/h   : Diagnose_Fault_0x01 ~ 0x0C 개별 진단 모듈
+ *  - fault_test.c : 단위 테스트 코드
+ *  - main.c  : 결과 CSV 생성 및 Fault State 기록
+ *
+ *  Execution Flow
+ *  1. Input CSV 로드
+ *  2. Cycle 단위 Snapshot 생성
+ *  3. 각 Fault Diagnostic Function 실행
+ *  4. Fault 상태 결과 기록
+ *
+ *
+ *  Arguments
+ *      argv[1] : Input CSV File Path
+ *      argv[2] : Result CSV File Path
+ *
+ *  Design Responsibility
+ *  - Fault Diagnostic Logic Design
+ *  - Fault State Machine 정의
+ *  - Diagnostic Engine Architecture 설계 및 구현
  *
  * ============================================================================ */
+
+
+#include <stdio.h>
+#include "fault.h"
 
 int main(int argc, char* argv[])
 {
