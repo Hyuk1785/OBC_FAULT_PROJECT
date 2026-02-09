@@ -53,3 +53,22 @@ fault_0x01_test.csv
 
 ## Output
 fault_0x01_test_result.csv (각 Cycle별 고장 상태 출력)
+
+## Change Log
+2026.01.27
+고장 사양 진단서 작성 완료
+
+2026.02.01
+고장 사양 진단서 수정 및 사양 기반 고장 진단 로직 설계&구현
+
+2026.02.03
+각 Fault Code(0x01 ~ 0x0C) 진단 로직 단위 테스트(Unit Test) 수행
+
+2026.02.05
+PyQt5 기반 GUI 진단 도구 구현
+
+2026.02.07
+PyQt5 GUI를 통한 진단 결과 출력 기능 개선 및 상세화
+
+2026.02.09
+각 Fault Code 진단 로직 재검증 및 로직 안정화
