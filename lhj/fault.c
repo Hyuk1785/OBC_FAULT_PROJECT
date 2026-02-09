@@ -49,16 +49,6 @@ FaultStatus Fault_GetStatus(FaultCode code)
     return faultState[code];
 }
 
-/******************************************************************************
- * Function : Diagnose_Fault_0x01
- * Purpose  : 입력 전류 과전류 고장(0x01) 진단 및 상태 관리
- *
- * Logic
- *  - SEQ_CHARGING 상태에서 3상 전류 중 하나라도 Imax 초과 시 Over Counter 증가
- *  - Time Threshold 미만 → FAULT_DETECT
- *  - Time Threshold 이상 → FAULT_CONFIRM
- *  - CONFIRM 상태에서 전류가 정상 범위로 일정 시간 유지되면 NORMAL로 복귀
- ******************************************************************************/
 void Diagnose_Fault_0x01(const InputSnapshot* in)
 {
     /* 고장 검출 및 회복 시간 카운터 */
