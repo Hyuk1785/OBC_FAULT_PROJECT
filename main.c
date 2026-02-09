@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
     /* ------------------------------
      * Main diagnostic loop
      * ------------------------------ */
-	Input_ReadLine(fp, &in); // Çì´õ ½ºÅµ
+	//Input_ReadLine(fp, &in); // Çì´õ ½ºÅµ
 
     while (Input_ReadLine(fp, &in))
     {
